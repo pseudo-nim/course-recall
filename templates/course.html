@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ course.name }} - Course Recall{% endblock %}
+{% block content %}
+<h1>{{ course.name }}</h1>
+{% if course.description %}<p class="meta">{{ course.description }}</p>{% endif %}
+
+<div class="actions">
+  <a class="btn" href="{{ url_for('study', course_id=course.id) }}">&#127890; Study</a>
+  <a class="btn" href="{{ url_for('quiz', course_id=course.id) }}&#10067;">Quiz</a>
+</div>
+
+<section class="card">
+  <h2>Add notes</h2>
+  <div class="two-col">
+    <div>
+      <h3>Upload a file</h3>
+      <p class="meta">PDF, Word (.docx), text or Markdown.</p>
+      <form method="post" action="{{ url_for('upload_file', course_id=course.id) }}" enctype="multipart/form-data" class="inline-form">
+        <input type="file" name="file" required>
+        <button type="submit">Upload</button>
+      </form>
+    </div>
+    <div>
+      <h3>Paste notes</h3>
+      <form method="post" action="{{ url_for('paste_notes', course_id=course.id) }}">
+        <input type="text" name="title" placeholder="Note title (optional)">
+        <textarea name="content" rows="5" placeholder="Paste your notes here..." required></textarea>
+        <button type="submit">Add notes</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Notes ({{ course.notes | length }})</h2>
+  {% if course.notes %}
+  <table class="table">
+    <tr><th>Title</th><th>Source</th><th>Added</th><th>Preview</th><th></th></tr>
+    {% for n in course.notes %}
+    <tr>
+      <td>{{ n.title }}</td>
+      <td>{{ 'File' if n.source == 'file' else 'Pasted' }}</td>
+      <td>{{ n.added_at }}</td>
+      <td class="meta">{{ n.content[:80] }}&hellip;</td>
+      <td>
+        <form method="post" action="{{ url_for('delete_note', course_id=course.id, note_id=n.id) }}">
+          <button type="submit" class="danger small">&times;</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="empty">No notes yet.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Generate study material</h2>
+  <form method="post" action="{{ url_for('generate_material', course_id=course.id) }}" class="inline-form">
+    <label><input type="checkbox" name="replace" value="1"> Replace existing material</label>
+    <button type="submit">Generate flashcards &amp; quiz</button>
+  </form>
+  <p class="meta">Mode: {{ 'AI-enhanced' if ai_enabled else 'Offline rule-based' }} (change in Settings).</p>
+  <p class="meta">Current: {{ course.flashcards | length }} flashcards, {{ course.quiz | length }} quiz questions.</p>
+  {% if course.flashcards %}
+  <form method="post" action="{{ url_for('reset_progress', course_id=course.id) }}">
+    <button type="submit" class="small">Reset got-it progress</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if course.attempts %}
+<section class="card">
+  <h2>Quiz history</h2>
+  <ul class="meta">
+    {% for a in course.attempts[-5:] | reverse %}
+    <li>{{ a.at }} &mdash; {{ a.score }}% ({{ a.correct }}/{{ a.total }})</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

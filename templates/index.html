@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Course Recall - My Courses{% endblock %}
+{% block content %}
+<h1>My Courses</h1>
+<section class="card">
+  <h2>Create a course</h2>
+  <form method="post" action="{{ url_for('create_course') }}" class="inline-form">
+    <input type="text" name="name" placeholder="Course name (e.g. Biology 101)" required>
+    <input type="text" name="description" placeholder="Optional description">
+    <button type="submit">Create</button>
+  </form>
+</section>
+{% if courses %}
+<div class="course-grid">
+  {% for c in courses %}
+  <div class="card course-card">
+    <h3><a href="{{ url_for('course_detail', course_id=c.id) }}">{{ c.name }}</a></h3>
+    {% if c.description %}<p>{{ c.description }}</p>{% endif %}
+    <p class="meta">{{ c.notes | length }} note(s) &middot; {{ c.flashcards | length }} cards &middot; {{ c.quiz | length }} questions</p>
+    {% set got = c.flashcards | selectattr('got_it') | list | length %}
+    {% if c.flashcards %}
+    <p class="meta">Got-it progress: {{ got }}/{{ c.flashcards | length }}</p>
+    {% endif %}
+    {% if c.attempts %}
+    <p class="meta">Last quiz score: {{ c.attempts[-1].score }}%</p>
+    {% endif %}
+    <div class="actions">
+      <a class="btn" href="{{ url_for('study', course_id=c.id) }}">Study</a>
+      <a class="btn" href="{{ url_for('quiz', course_id=c.id) }}">Quiz</a>
+      <form method="post" action="{{ url_for('delete_course_route', course_id=c.id) }}" class="inline-form"
+            onsubmit="return confirm('Delete this course and all its material?');">
+        <button type="submit" class="danger">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">No courses yet. Create your first course above.</p>
+{% endif %}
+{% endblock %}

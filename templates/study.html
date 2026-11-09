@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Study - {{ course.name }}{% endblock %}
+{% block content %}
+<h1>Study: {{ course.name }}</h1>
+<div class="actions">
+  <a class="btn" href="{{ url_for('study', course_id=course.id) }}">All cards</a>
+  <a class="btn" href="{{ url_for('study', course_id=course.id, shuffle=1) }}">Shuffle</a>
+  <a class="btn" href="{{ url_for('study', course_id=course.id, review=1) }}">Needs review</a>
+  <a class="btn" href="{{ url_for('course_detail', course_id=course.id) }}">&larr; Back to course</a>
+</div>
+{% set got = course.flashcards | selectattr('got_it') | list | length %}
+<p class="meta">Got it: {{ got }}/{{ course.flashcards | length }}</p>
+
+{% if cards %}
+<div id="deck" data-course="{{ course.id }}">
+  {% for c in cards %}
+  <div class="flip-card" data-card="{{ c.id }}">
+    <div class="flip-inner">
+      <div class="flip-face front">
+        <p class="card-label">FRONT &middot; {{ loop.index }}/{{ cards | length }}</p>
+        <p>{{ c.front }}</p>
+        <p class="hint">Click to flip</p>
+      </div>
+      <div class="flip-face back">
+        <p class="card-label">BACK</p>
+        <p>{{ c.back }}</p>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="mark" data-got="0">&#128260; Review again</button>
+      <button class="mark" data-got="1">&#9989; Got it!</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">No flashcards yet. Generate them from the course page, or none need review.</p>
+{% endif %}
+<script>
+document.querySelectorAll('.flip-card').forEach(function (card) {
+  card.querySelector('.flip-inner').addEventListener('click', function () {
+    card.classList.toggle('flipped');
+  });
+  card.querySelectorAll('.mark').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const body = new URLSearchParams();
+      body.set('got_it', btn.dataset.got);
+      fetch('/courses/' + document.getElementById('deck').dataset.course +
+            '/cards/' + card.dataset.card + '/mark', {method: 'POST', body: body})
+        .then(function () { card.style.transition = 'opacity .3s'; card.style.opacity = '0';
+          setTimeout(function () { card.style.display = 'none'; }, 300); });
+    });
+  });
+});
+</script>
+{% endblock %}

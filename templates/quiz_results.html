@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Quiz Results - {{ course.name }}{% endblock %}
+{% block content %}
+<h1>Quiz Results: {{ course.name }}</h1>
+<section class="card score-card">
+  <h2>Score: {{ score }}%</h2>
+  <p>{{ correct }} of {{ total }} correct</p>
+</section>
+{% for r in results %}
+<fieldset class="card {{ 'correct-box' if r.correct else 'wrong-box' }}">
+  <legend>{{ 'Correct' if r.correct else 'Incorrect' }}</legend>
+  <p class="question">{{ r.question }}</p>
+  {% for opt in r.options %}
+  <p class="option {{ 'opt-correct' if loop.index - 1 == r.answer else ('opt-chosen' if loop.index - 1 == r.submitted else '') }}">
+    {{ opt }}
+    {% if loop.index - 1 == r.answer %} &#9989;{% elif loop.index - 1 == r.submitted %} &#10060; your answer{% endif %}
+  </p>
+  {% endfor %}
+  {% if r.explanation %}<p class="explanation"><strong>Why:</strong> {{ r.explanation }}</p>{% endif %}
+</fieldset>
+{% endfor %}
+<div class="actions">
+  <a class="btn" href="{{ url_for('quiz', course_id=course.id) }}">&#128260; Retake quiz</a>
+  <a class="btn" href="{{ url_for('study', course_id=course.id) }}">&#127890; Study flashcards</a>
+  <a class="btn" href="{{ url_for('course_detail', course_id=course.id) }}">&larr; Back to course</a>
+</div>
+{% endblock %}

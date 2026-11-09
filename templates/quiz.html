@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Quiz - {{ course.name }}{% endblock %}
+{% block content %}
+<h1>Quiz: {{ course.name }}</h1>
+<p class="meta">{{ questions | length }} questions. Answer all, then submit for scoring and explanations.</p>
+<form method="post" action="{{ url_for('submit_quiz', course_id=course.id) }}">
+  {% for q in questions %}
+  <fieldset class="card">
+    <legend>Question {{ loop.index }}</legend>
+    <p class="question">{{ q.question }}</p>
+    {% for opt in q.options %}
+    <label class="option">
+      <input type="radio" name="{{ q.id }}" value="{{ loop.index - 1 }}" required>
+      {{ opt }}
+    </label>
+    {% endfor %}
+  </fieldset>
+  {% endfor %}
+  <button type="submit" class="big">Submit answers</button>
+</form>
+{% endblock %}

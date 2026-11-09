@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Settings - Course Recall{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<section class="card">
+  <h2>Generation mode</h2>
+  <form method="post" action="{{ url_for('settings_page') }}">
+    <label class="option">
+      <input type="checkbox" name="ai_enabled" {{ 'checked' if settings.ai_enabled }}>
+      Enable AI-enhanced generation
+    </label>
+    <p class="meta">When disabled (default), generation is fully offline and rule-based.</p>
+    <h3>OpenAI-compatible API</h3>
+    <label>API key
+      <input type="password" name="api_key" value="{{ settings.api_key }}" placeholder="sk-...">
+    </label>
+    <label>Base URL
+      <input type="text" name="base_url" value="{{ settings.base_url }}" placeholder="https://api.openai.com/v1">
+    </label>
+    <label>Model
+      <input type="text" name="model" value="{{ settings.model }}" placeholder="gpt-4o-mini">
+    </label>
+    <button type="submit">Save settings</button>
+  </form>
+  <p class="meta">Settings are stored only in the local JSON data file on this machine.</p>
+</section>
+{% endblock %}
